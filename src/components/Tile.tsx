@@ -27,9 +27,11 @@ export function Tile({
         <div 
             onClick={handleOnClick}
             style={{
-                backgroundColor: wasRevealed ? 'pink' : 'gray',
-                height: '30px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 color: 'white',
+                backgroundColor: wasRevealed ? 'pink' : 'gray',
             }}
         >
            { wasRevealed && (hasMine ? 'M' : (!!minesAround ? minesAround: '')) }
