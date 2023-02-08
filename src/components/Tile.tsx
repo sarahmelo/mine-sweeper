@@ -3,29 +3,37 @@ import React, { useState } from "react"
 export type TileProps = {
     positionX: number;
     positionY: number;
-    children: React.ReactNode,
     wasRevealed: boolean,
     hasMine: boolean,
     minesAround: number,
-    onClick: (postionX: number, positionY: number) => void
+    isFlagged: boolean,
+    onLeftClick: (postionX: number, positionY: number) => void
+    onRightClick: (postionX: number, positionY: number) => void
 }
 
 export function Tile({
     positionX,
     positionY,
-    children,
     wasRevealed,
     hasMine,
     minesAround,
-    onClick,
+    isFlagged,
+    onLeftClick,
+    onRightClick,
 }: TileProps) {
-    const handleOnClick = () => {
-        onClick(positionX, positionY)
+    const handleOnLeftClick = () => {
+        onLeftClick(positionX, positionY)
+    }
+
+    const handleOnRightClick = (event: React.MouseEvent) => {
+        event.preventDefault();
+        onRightClick(positionX, positionY);
     }
 
     return (
         <div 
-            onClick={handleOnClick}
+            onClick={handleOnLeftClick}
+            onContextMenu={handleOnRightClick}
             style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -34,7 +42,13 @@ export function Tile({
                 backgroundColor: wasRevealed ? 'pink' : 'gray',
             }}
         >
-           { wasRevealed && (hasMine ? 'M' : (!!minesAround ? minesAround: '')) }
+            {
+                wasRevealed ? (
+                    hasMine ? 'M' : (!!minesAround ? minesAround : '')
+                ) : (
+                    isFlagged && 'F'
+                )
+            }
         </div>
     )
 }
