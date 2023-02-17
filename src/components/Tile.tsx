@@ -30,6 +30,8 @@ export function Tile({
         onRightClick(positionX, positionY);
     }
 
+    const flaggedcorrectly = !hasMine && isFlagged
+
     return (
         <div 
             onClick={handleOnLeftClick}
@@ -39,12 +41,14 @@ export function Tile({
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: 'white',
-                backgroundColor: wasRevealed ? 'pink' : 'gray',
+                backgroundColor: wasRevealed ? (flaggedcorrectly ? 'red' : 'dodgerblue'): 'black',
             }}
         >
             {
-                wasRevealed ? (
-                    hasMine ? 'M' : (!!minesAround ? minesAround : '')
+                wasRevealed && !flaggedcorrectly ? (
+                    hasMine ?
+                    'M' : 
+                    (!!minesAround && minesAround) 
                 ) : (
                     isFlagged && 'F'
                 )

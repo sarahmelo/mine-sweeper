@@ -40,9 +40,7 @@ export function Board({
                 )
             )
 
-            if (playerWon) {
-                alert("winner")
-            }
+            if (playerWon) onPlayerWon()
         }
 
     }, [board,flagsRemaining, minesPosition])
@@ -51,6 +49,13 @@ export function Board({
         const newBoard = createNewBoard(totalRows, totalColumns, getInitialTileState);
         setBoard(newBoard);
     }, [totalColumns, totalRows])
+
+    useEffect(() => {
+        if(gameState === 'game-over') {
+            detonateMines()
+            revealIncorrectFlags()
+        }
+    },[gameState])
 
     const getInitialTileState = (
         positionX: number,
@@ -99,12 +104,14 @@ export function Board({
             for (let offsetY = -1; offsetY <= 1; offsetY++) {
                 let currentY = positionY + offsetY;
 
-                if ( 
+                const isCurrentTile = currentX === positionX && currentY === positionY
+
+                const isInsideBoundaries = 
                     currentX > -1 && 
                     currentY > -1 && 
                     currentX < totalRows && 
                     currentY < totalColumns
-                ) {
+                if (isInsideBoundaries && !isCurrentTile) {
                     neighbors.push(board[currentX][currentY]);
                 }
             }
@@ -114,35 +121,34 @@ export function Board({
     }
 
     const countMinesInNeighbors = (neighbors: TileState[]) => {
-        return neighbors.reduce((acc, tile) => {
-            if(tile.hasMine) {
-                acc++
-            }
-            
-            return acc;
-        },0)
+        return neighbors.reduce((acc, tile) => tile.hasMine ? ++acc :  acc, 0)
     }
 
-    const getCurrentTile = (
+    const getTyleByPosition = (
         positionX: number,
         positionY: number,
     )  => {
-        return board[positionX][positionY]
+        return ({...board[positionX][positionY]})
     }
 
     const floodFill = (
         positionX: number,
         positionY: number,
     ) => {
-        let currentTile = getCurrentTile(positionX, positionY);
+        let currentTile = getTyleByPosition(positionX, positionY);
+
+        if (currentTile.isFlagged) return
        
-        if (currentTile.wasRevealed || currentTile.hasMine || currentTile.isFlagged) return
+        revealTile(positionX,positionY);
+
+        if (
+            currentTile.wasRevealed || 
+            currentTile.hasMine
+        ) return
         
         const neighbors = getNeighbors(positionX, positionY);
         const minesAround = countMinesInNeighbors(neighbors);
         
-        revealTile(positionX, positionY, minesAround)
-
         neighbors.forEach((neighbor) => {
             if (!neighbor.wasRevealed && !minesAround) {
                 floodFill(neighbor.positionX,neighbor.positionY)
@@ -150,9 +156,30 @@ export function Board({
         })
     }
 
-    const revealMines = () => {
+    const revealIncorrectFlags = () => {
+        const boardCopy = [ ...board]
+
+        for(let row = 0; row < totalRows; row++) {
+            for(let col = 0; col < totalColumns; col++) {
+                const currentTile = boardCopy[row][col]
+                const isIncorrectlyFlagged = currentTile.isFlagged && !currentTile.hasMine
+
+                if (isIncorrectlyFlagged) {
+                    currentTile.wasRevealed = true
+                }
+            }
+        }
+
+        setBoard([...boardCopy])
+    }
+
+    const detonateMines = () => {
         minesPosition.forEach(({ positionX, positionY}) => {
-            revealTile(positionX, positionY)
+            let currentTile = getTyleByPosition(positionX, positionY)
+
+            if(!currentTile.isFlagged) {
+                revealTile(positionX,positionY)
+            }
         })
     }
 
@@ -174,9 +201,34 @@ export function Board({
     ): void => {
         if (!playerCanMakeAnAction()) return
 
-        const currentTile = getCurrentTile(positionX, positionY)
+        const currentTile = getTyleByPosition(positionX, positionY)
 
         if (currentTile.isFlagged) return
+
+        if (currentTile.wasRevealed) {
+            const neighbors = getNeighbors(positionX, positionY)
+
+            const flags = neighbors.reduce((acc, curr) => {
+                if (curr.isFlagged) ++acc
+
+                return acc
+            }, 0)
+
+            if (flags === currentTile.minesAround) {
+                neighbors.forEach((neighbor) => {
+                    if (!neighbor.minesAround) {
+                        floodFill(neighbor.positionX, neighbor.positionY)
+                        return
+                    }
+
+                    if (!neighbor.isFlagged) {
+                        revealTile(neighbor.positionX, neighbor.positionY)
+                        return
+                    }
+                })
+            }
+            return
+        }
 
         if (!currentTile.hasMine) {
             floodFill(positionX,positionY);
@@ -184,7 +236,7 @@ export function Board({
         }
 
         onGameOver();
-        revealMines();
+        detonateMines();
         return;
     }
 
@@ -192,12 +244,9 @@ export function Board({
         positionX: number,
         positionY: number,
     ) => {
-        const currentTile = getCurrentTile(positionX, positionY);
+        const currentTile = getTyleByPosition(positionX, positionY);
 
-        if (
-            gameState === 'game-over' ||
-            currentTile.wasRevealed
-        ) return
+        if (gameState === 'game-over') return
 
         toggleFlagOnTile(currentTile)
     }
@@ -224,9 +273,10 @@ export function Board({
     const revealTile = (
         positionX: number,
         positionY: number,
-        minesAround: number = 0,
         boardCopy: GameBoard = [...board],
     ): void => {
+        const minesAround = countMinesInNeighbors(getNeighbors(positionX,positionY)); 
+
         const newTileState = { 
             ...boardCopy[positionX][positionY],
             wasRevealed: true,
@@ -235,6 +285,8 @@ export function Board({
 
         boardCopy[positionX][positionY] = newTileState;
         setBoard([...boardCopy]);
+
+        if (newTileState.hasMine && gameState !== 'game-over') onGameOver()
     }
 
     return (
