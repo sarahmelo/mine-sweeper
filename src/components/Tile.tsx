@@ -1,19 +1,17 @@
 import React, { useState } from "react"
 
 export type TileProps = {
-    positionX: number;
-    positionY: number;
+    coordinates: Coordinate2D;
     wasRevealed: boolean,
     hasMine: boolean,
     minesAround: number,
     isFlagged: boolean,
-    onLeftClick: (postionX: number, positionY: number) => void
-    onRightClick: (postionX: number, positionY: number) => void
+    onLeftClick: ({positionX, positionY}: Coordinate2D) => void
+    onRightClick: ({positionX, positionY}: Coordinate2D) => void
 }
 
 export function Tile({
-    positionX,
-    positionY,
+    coordinates,
     wasRevealed,
     hasMine,
     minesAround,
@@ -22,12 +20,12 @@ export function Tile({
     onRightClick,
 }: TileProps) {
     const handleOnLeftClick = () => {
-        onLeftClick(positionX, positionY)
+        onLeftClick({ ...coordinates })
     }
 
     const handleOnRightClick = (event: React.MouseEvent) => {
         event.preventDefault();
-        onRightClick(positionX, positionY);
+        onRightClick({ ...coordinates });
     }
 
     const flaggedcorrectly = !hasMine && isFlagged

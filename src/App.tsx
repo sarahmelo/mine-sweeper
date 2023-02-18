@@ -2,15 +2,10 @@ import { useEffect, useState } from "react";
 import { Board } from "./components/Board";
 export type GameState = 'waiting' | 'playing' | 'player-won' | 'game-over'
 
-export type MinesProbability = {
-    base: number,
-    outcomes: number,
-}
-
 type LevelConfig = {
     totalColumns: number,
     totalRows: number,
-    minesProbability: MinesProbability,
+    minesCount: number,
 }
 
 type Level = { 
@@ -18,36 +13,38 @@ type Level = {
     config: LevelConfig
 }
 
-type Levels = Record<'easy' | 'medium', Level>
+type Levels = Record<'beginner' | 'intermediate' | 'expert', Level>
 
 const levels: Levels = {
-    easy: {
+    beginner: {
         description: 'Bem facil, geito para bebes',
         config: {
-            totalColumns: 10,
-            totalRows: 10,
-            minesProbability: {
-                base:  10,
-                outcomes: 8,
-            } 
+            totalColumns: 8,
+            totalRows: 8,
+            minesCount: 10,
         }
     },
-    medium: {
+    intermediate: {
         description: 'mais ou menos',
         config: {
-            totalColumns: 15,
-            totalRows: 15,
-            minesProbability: {
-                base: 7,
-                outcomes: 5,
-            } 
+            totalColumns: 16,
+            totalRows: 16,
+            minesCount: 20,
+        }
+    },
+    expert: {
+        description: 'hardcore',
+        config: {
+            totalColumns: 32,
+            totalRows: 32,
+            minesCount: 99,
         }
     },
 }
 
 export function App() {
     const [gameState, setGameState] = useState<GameState>('playing')
-    const [gameLevel, setGameLevel] = useState<keyof Levels>('easy')
+    const [gameLevel, setGameLevel] = useState<keyof Levels>('beginner')
 
     useEffect(
         () => {
