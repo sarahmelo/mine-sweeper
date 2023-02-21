@@ -53,7 +53,7 @@ export function App() {
         [gameLevel]
     )
 
-    const handleOnPlayerStartPlaying = () => {
+    const handlePlayerFirstMove = () => {
         setGameState('playing')
     }
 
@@ -89,7 +89,7 @@ export function App() {
                     gameState={gameState}
                     onGameOver={handleOnGameOver}
                     onPlayerWon={handlePlayerWon}
-                    onPlayerStartPlaying={handleOnPlayerStartPlaying}
+                    onPlayerFirstAction={handlePlayerFirstMove}
                     { ...levels[gameLevel].config }
                 />
             ) : ''

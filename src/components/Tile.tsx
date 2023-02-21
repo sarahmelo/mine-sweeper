@@ -1,11 +1,6 @@
 import React, { useState } from "react"
 
-export type TileProps = {
-    coordinates: Coordinate2D;
-    wasRevealed: boolean,
-    hasMine: boolean,
-    minesAround: number,
-    isFlagged: boolean,
+export type TileProps = Tile & {
     onLeftClick: ({positionX, positionY}: Coordinate2D) => void
     onRightClick: ({positionX, positionY}: Coordinate2D) => void
 }
