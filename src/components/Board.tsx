@@ -221,7 +221,10 @@ export function Board({
                 display: 'grid',
                 gridTemplateColumns: `repeat(${totalColumns}, 40px)`,
                 gridTemplateRows: `repeat(${totalRows}, 40px)`,
+                backgroundColor: '#ababab',
+                width: 'fit-content',
                 gap: '2px',
+                border: '4px solid #929292'
             }}>
                 {
                     board.map((row, rowIndex) => (

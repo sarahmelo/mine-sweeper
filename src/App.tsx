@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Board } from "./components/Board";
-export type GameState = 'waiting' | 'playing' | 'player-won' | 'game-over'
+export type GameState = 'restarting' | 'waiting' | 'playing' | 'player-won' | 'game-over'
 
 type LevelConfig = {
     totalColumns: number,
@@ -9,7 +9,7 @@ type LevelConfig = {
 }
 
 type Level = { 
-    description: string,
+    label: string,
     config: LevelConfig
 }
 
@@ -17,7 +17,7 @@ type Levels = Record<'beginner' | 'intermediate' | 'expert', Level>
 
 const levels: Levels = {
     beginner: {
-        description: 'Bem facil, geito para bebes',
+        label: 'Beginner',
         config: {
             totalColumns: 8,
             totalRows: 8,
@@ -25,7 +25,7 @@ const levels: Levels = {
         }
     },
     intermediate: {
-        description: 'mais ou menos',
+        label: 'Intermediate',
         config: {
             totalColumns: 16,
             totalRows: 16,
@@ -33,7 +33,7 @@ const levels: Levels = {
         }
     },
     expert: {
-        description: 'hardcore',
+        label: 'Expert',
         config: {
             totalColumns: 32,
             totalRows: 32,
@@ -45,6 +45,14 @@ const levels: Levels = {
 export function App() {
     const [gameState, setGameState] = useState<GameState>('playing')
     const [gameLevel, setGameLevel] = useState<keyof Levels>('beginner')
+
+    useEffect(
+        () => {
+            if (gameState === 'restarting') {
+                setGameState('waiting')
+            }
+        },[gameState]
+    )
 
     useEffect(
         () => {
@@ -72,19 +80,19 @@ export function App() {
     return (
         <>
         {
-            Object.keys(levels).map((level) => (
+            (Object.keys(levels) as Array<keyof Levels>).map((level) => (
                 <button 
                     disabled={gameState === 'playing'}
                     key={level}
                     onClick={() => handleLevelChange(level as keyof Levels)}
                 >
-                    {level}
+                    {levels[level].label}
                 </button>
             ))
         }
-        <div>{gameState}</div>
         {
-            gameLevel ? (
+            gameLevel &&
+            gameState !== 'restarting' && (
                 <Board
                     gameState={gameState}
                     onGameOver={handleOnGameOver}
@@ -92,8 +100,13 @@ export function App() {
                     onPlayerFirstAction={handlePlayerFirstMove}
                     { ...levels[gameLevel].config }
                 />
-            ) : ''
+            )
         }
+        <div>
+            <button onClick={() => setGameState('restarting')}>
+                Restart
+            </button>
+        </div>
         </>
     )
 }

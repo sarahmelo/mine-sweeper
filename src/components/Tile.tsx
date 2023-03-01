@@ -23,10 +23,10 @@ export function Tile({
         onRightClick({ ...coordinates });
     }
 
-    const flaggedcorrectly = !hasMine && isFlagged
+    const flaggedIncorrectly = !hasMine && isFlagged
 
     return (
-        <div 
+        <button 
             onClick={handleOnLeftClick}
             onContextMenu={handleOnRightClick}
             style={{
@@ -34,18 +34,21 @@ export function Tile({
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: 'white',
-                backgroundColor: wasRevealed ? (flaggedcorrectly ? 'red' : 'dodgerblue'): 'black',
+                fontSize: '1rem',
+                backgroundColor: wasRevealed ? (flaggedIncorrectly ? 'red' : '#c0c0c0'): '#c0c0c0',
+                ...(!wasRevealed ? (
+                    {
+                        borderColor: 'white',
+                        borderWidth: 4,
+                    }
+                ) : {
+                    border: 0,
+                })
             }}
         >
-            {
-                wasRevealed && !flaggedcorrectly ? (
-                    hasMine ?
-                    'M' : 
-                    (!!minesAround && minesAround) 
-                ) : (
-                    isFlagged && 'F'
-                )
-            }
-        </div>
+            { isFlagged && '🚩' }
+            { wasRevealed && hasMine  && '💣' }
+            { wasRevealed && !hasMine && !isFlagged && (!!minesAround && minesAround) }
+        </button>
     )
 }
